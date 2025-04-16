@@ -5,20 +5,29 @@ const users = require("./user-config");
 
 function programarMarcaje(hora, sentido) {
   return functions.pubsub
-    .schedule(hora)
-    .timeZone("America/Santiago")
-    .onRun(async () => {
-      for (const user of users) {
-        try {
-          await marcarEnBuk(user, sentido);
-          await notifyTelegram(user, `✅ ${sentido} registrada correctamente para ${user.nombre}`);
-        } catch (error) {
-          console.error(`❌ Error al registrar ${sentido} para ${user.nombre}:`, error);
-          await notifyTelegram(user, `❌ Error al registrar ${sentido} para ${user.nombre}: ${error.message}`);
+      .schedule(hora)
+      .timeZone("America/Santiago")
+      .onRun(async () => {
+        console.log(`🕒 Ejecutando marcaje programado para sentido: ${sentido} a las ${hora}`);
+
+        for (const user of users) {
+          try {
+            console.log(`🚀 Iniciando proceso de marcaje para: ${user.nombre}`);
+            await marcarEnBuk(user, sentido);
+            const mensaje = `✅ ${sentido} registrada correctamente para ${user.nombre}`;
+            await notifyTelegram(user, mensaje);
+            console.log(`📬 Notificación enviada a Telegram para ${user.nombre}`);
+          } catch (error) {
+            const errorMsg = `❌ Error al registrar ${sentido} para ${user.nombre}: ${error.message}`;
+            console.error(errorMsg);
+            await notifyTelegram(user, errorMsg);
+          }
         }
-      }
-    });
+
+        console.log(`✅ Finalizó ejecución de marcaje ${sentido}`);
+      });
 }
 
 exports.marcarEntrada = programarMarcaje("30 8 * * 1-5", "ENTRADA");
 exports.marcarSalida = programarMarcaje("30 18 * * 1-5", "SALIDA");
+exports.testTelegramNotification = require("./testTelegram").testTelegramNotification;
