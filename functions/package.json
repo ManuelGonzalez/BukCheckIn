@@ -1,0 +1,11 @@
+{
+  "name": "buk-auto-checkin",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "firebase-functions": "^4.0.0",
+    "puppeteer": "^21.3.8"
+  },
+  "engines": {
+    "node": "18"
+  }
+}
