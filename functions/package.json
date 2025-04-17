@@ -2,8 +2,10 @@
   "name": "buk-auto-checkin",
   "dependencies": {
     "axios": "^1.6.0",
+    "chrome-aws-lambda": "10.1.0",
+    "firebase-admin": "^12.7.0",
     "firebase-functions": "^4.0.0",
-    "puppeteer": "^21.3.8"
+    "puppeteer-core": "10.4.0"
   },
   "engines": {
     "node": "18"
