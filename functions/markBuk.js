@@ -2,9 +2,6 @@ const chromium = require("chrome-aws-lambda");
 const puppeteer = require("puppeteer-core");
 
 async function marcarEnBuk(user, sentido) {
-  const URL_LOGIN = "https://23people.buk.cl/users/sign_in";
-  const URL_PORTAL = "https://23people.buk.cl/static_pages/portal";
-
   console.log(`🔐 Iniciando proceso de marcaje para ${user.nombre} - Sentido: ${sentido}`);
 
   const browser = await puppeteer.launch({
@@ -18,7 +15,7 @@ async function marcarEnBuk(user, sentido) {
 
   try {
     console.log("🌐 Navegando al login de Buk...");
-    await page.goto(URL_LOGIN, { waitUntil: "networkidle2" });
+    await page.goto(user.urlLogin, { waitUntil: "networkidle2" });
 
     console.log("✍️ Eliminando atributo readonly del email...");
     await page.evaluate(() => {
@@ -45,10 +42,10 @@ async function marcarEnBuk(user, sentido) {
     ]);
 
     console.log("📄 Navegando al portal del colaborador...");
-    await page.goto(URL_PORTAL, { waitUntil: "networkidle2" });
+    await page.goto(user.urlPortal, { waitUntil: "networkidle2" });
 
     console.log(`🖱️ Buscando botón con texto "${sentido}"...`);
-    await page.evaluate((sentido) => {
+    const encontrado = await page.evaluate(({ sentido, lat, lng }) => {
       const botones = Array.from(document.querySelectorAll("button.btn-asistencia"));
       const target = botones.find(boton => {
         const span = boton.querySelector("span.btn-label");
@@ -56,12 +53,23 @@ async function marcarEnBuk(user, sentido) {
       });
 
       if (target) {
-        console.log(`✅ Botón de ${sentido} encontrado, haciendo clic...`);
+        console.log(`✅ Botón de ${sentido} encontrado`);
+
+        const url = `/employee_portal/web_marking/marcaje?sentido=${sentido}&latitude=${lat}&longitude=${lng}`;
+        target.setAttribute("ic-post-to", url);
+        target.setAttribute("ic-src", url);
+
+        console.log("📌 Latitud y longitud aplicadas al botón");
         target.click();
-      } else {
-        console.log(`❌ Botón de ${sentido} no encontrado`);
+        return true;
       }
-    }, sentido);
+
+      return false;
+    }, { sentido, lat: user.latitud, lng: user.longitud });
+
+    if (!encontrado) {
+      throw new Error(`No se encontró el botón de ${sentido} para hacer click`);
+    }
 
     console.log("⏳ Esperando confirmación...");
     await page.waitForTimeout(3000);

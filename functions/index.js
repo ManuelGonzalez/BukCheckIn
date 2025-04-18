@@ -30,7 +30,7 @@ function programarMarcaje(hora, sentido) {
 }
 
 exports.marcarEntrada = programarMarcaje("30 8 * * 1-5", "ENTRADA");
-exports.marcarSalida = programarMarcaje("25 19 * * 1-5", "SALIDA");
+exports.marcarSalida = programarMarcaje("21 21 * * 1-5", "SALIDA");
 exports.testTelegramNotification = require("./testTelegram").testTelegramNotification;
 exports.marcarEntradaManual = require("./manualCheckin").marcarEntradaManual;
 exports.marcarSalidaManual = require("./manualCheckin").marcarSalidaManual;
