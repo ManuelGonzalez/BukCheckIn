@@ -1,158 +1,56 @@
-# 🤖 Buk Auto Check-In (Entrada y Salida Automática)
+# Buk Auto Check-in 🔒🕒
 
-Automatización del registro de **entrada (08:30)** y **salida (18:30)** laboral en Buk, con **notificación por Telegram**.  
-Funciona desde la nube (Firebase), no requiere tener la computadora encendida.
-
----
-
-## 🚀 ¿Qué hace este proyecto?
-
-✅ Marca tu **entrada y salida** automáticamente en Buk  
-✅ Funciona todos los días hábiles (lunes a viernes)  
-✅ Te **notifica por Telegram** si la marca fue exitosa o falló  
-✅ Escalable: puede usarse con más de un usuario en el futuro
+Este proyecto automatiza el proceso de marcaje de **entrada** y **salida** en el portal de colaboradores de Buk, utilizando **Firebase Functions** y **Puppeteer**.
 
 ---
 
-## 🧩 Requisitos
+## 🚀 Funcionalidades
 
-Antes de comenzar, necesitás:
-
-1. ✅ Una cuenta de [Firebase](https://firebase.google.com/)
-2. ✅ Una tarjeta (para activar el plan **Blaze** — no te cobrará si no sobrepasás los límites)
-3. ✅ Tu usuario y contraseña de Buk
-4. ✅ Una cuenta de Telegram
-5. ✅ Crear un bot de Telegram (súper simple, explicado abajo)
-
----
-
-## 🛠️ Paso a paso
-
-### 1. Clonar o descargar el proyecto
-
-> Si recibiste un `.zip`, descomprimilo y abrí la carpeta
+- ✅ Marca automática de entrada y salida programada (cron)
+- ✅ Funciones manuales HTTP (`/marcarEntradaManual`, `/marcarSalidaManual`)
+- ✅ Login simulado (formulario con email, Next, contraseña, Sign In)
+- ✅ Click automatizado en botones `Entrada` / `Salida`
+- ✅ Inserción de latitud y longitud en los botones si no existen
+- ✅ Notificación por Telegram ante éxito o fallo
 
 ---
 
-### 2. Instalar Node.js
+## 📁 Estructura del proyecto
 
-- Descargar e instalar desde: [https://nodejs.org/](https://nodejs.org/)
-- Verificá en consola:
-  ```bash
-  node -v
-  npm -v
-  ```
-
----
-
-### 3. Instalar Firebase CLI
-
-```bash
-npm install -g firebase-tools
+```
+functions/
+│
+├── index.js                 // Entrypoint con funciones programadas
+├── markBuk.js               // Lógica de navegación y marcaje
+├── notifyTelegram.js        // Notificación vía bot Telegram
+├── manualCheckin.js         // Funciones HTTP manuales
+├── testTelegram.js          // Función para probar Telegram
+├── user-config.js           // Configuración de usuario y empresa
+└── package.json             // Dependencias y entorno
 ```
 
 ---
 
-### 4. Iniciar sesión en Firebase
+## 🛠️ Instalación
 
-```bash
-firebase login
-```
-
----
-
-### 5. Crear un proyecto en Firebase
-
-1. Ir a: [https://console.firebase.google.com/](https://console.firebase.google.com/)
-2. Clic en “Agregar proyecto”
-3. Llamalo por ejemplo `buk-checkin`
-4. Finalizá con los pasos por defecto
-
----
-
-### 6. Activar plan Blaze (requerido por Firebase Functions programadas)
-
-1. Ir a: https://console.firebase.google.com/project/<tu-proyecto>/settings/billing
-2. Hacé clic en **"Cambiar a Blaze"**
-3. Agregá tu tarjeta
-> 💸 No se cobra nada mientras el uso sea bajo
-
----
-
-### 7. Asociar tu carpeta al proyecto Firebase
-
-Desde la carpeta del proyecto:
-
-```bash
-firebase use --add
-```
-
-Elegí el proyecto que creaste y poné un alias, por ejemplo `default`.
-
----
-
-### 8. Instalar dependencias del proyecto
+1. Clonar el proyecto y entrar a la carpeta `functions`:
 
 ```bash
 cd functions
-npm install
-cd ..
+npm install --legacy-peer-deps
 ```
 
----
-
-### 9. Crear un bot de Telegram
-
-1. Buscá [@BotFather](https://t.me/BotFather) en Telegram
-2. Escribí `/newbot` y seguí los pasos
-3. Copiá el **token del bot**, se ve así:
-   ```
-   8043000699:ABC...XYZ
-   ```
-
-4. Abrí tu bot y escribile un mensaje (ej. "Hola")
-
-5. Pegá esta URL en tu navegador (reemplazá `<TOKEN>`):
-
-```
-https://api.telegram.org/bot<TOKEN>/getUpdates
-```
-
-6. En la respuesta JSON vas a ver tu `chat.id`, por ejemplo:
-
-```json
-"chat": {
-  "id": 6887344367
-}
-```
-
----
-
-### 10. Configurar tus credenciales en Firebase
-
-Ejecutá esto desde la terminal (reemplazando por tus datos reales):
+2. Configurar las variables de entorno de Firebase:
 
 ```bash
 firebase functions:config:set \
-  buk.email="TU_CORREO_BUK" \
-  buk.pass="TU_PASSWORD_BUK" \
-  telegram.token="TU_TOKEN_BOT_TELEGRAM" \
-  telegram.chat="TU_CHAT_ID"
+  buk.email="TU_EMAIL" \
+  buk.pass="TU_PASSWORD" \
+  telegram.token="TELEGRAM_BOT_TOKEN" \
+  telegram.chat="TELEGRAM_CHAT_ID"
 ```
 
-Ejemplo real:
-
-```bash
-firebase functions:config:set \
-  buk.email="m3gonzalez.cl@gmail.com" \
-  buk.pass="Manuel20189843" \
-  telegram.token="8043000699:AAFrTaoyznAcIhwWiUVxhUfmazG2VLCDaBo" \
-  telegram.chat="6887344367"
-```
-
----
-
-### 11. Desplegar las funciones a Firebase
+3. Desplegar funciones:
 
 ```bash
 firebase deploy --only functions
@@ -160,58 +58,59 @@ firebase deploy --only functions
 
 ---
 
-## 🧪 Probar que funciona
+## 👤 `user-config.js`
 
-Después del deploy, abrí la URL que te da la consola para esta función:
+Ejemplo de usuario:
+
+```js
+module.exports = [
+  {
+    nombre: "Manuel Gonzalez",
+    email: "m3gonzalez.cl@gmail.com",
+    password: process.env.BUK_PASSWORD,
+    telegramBotToken: process.env.TELEGRAM_TOKEN,
+    telegramChatId: process.env.TELEGRAM_CHAT,
+    latitud: -33.4528512,
+    longitud: -70.6281472,
+    urlLogin: "https://23people.buk.cl/users/sign_in",
+    urlPortal: "https://23people.buk.cl/static_pages/portal"
+  }
+];
+```
+
+> 📌 Soporta múltiples usuarios en el array.
+
+---
+
+## 🧪 Funciones manuales
+
+Una vez desplegadas, podés probar desde navegador o Postman:
 
 ```
-testTelegramNotification
-```
-
-Ejemplo:
-
-```
-https://us-central1-TU_PROYECTO.cloudfunctions.net/testTelegramNotification
-```
-
-Si todo está bien, vas a recibir este mensaje en Telegram:
-
-```
-✅ Hola Manuel, tu bot BukCheckin está funcionando 👋
+https://us-central1-TU_PROYECTO.cloudfunctions.net/marcarEntradaManual
+https://us-central1-TU_PROYECTO.cloudfunctions.net/marcarSalidaManual
 ```
 
 ---
 
-## 🕒 ¿Cuándo se ejecuta?
+## 🧠 Requisitos especiales
 
-- Entrada: todos los días lunes a viernes a las **08:30 AM (hora Chile)**
-- Salida: lunes a viernes a las **18:30 PM (hora Chile)**
-
----
-
-## 📦 Estructura del proyecto
-
-```
-buk-auto-checkin/
-├── functions/
-│   ├── index.js               # Configura funciones programadas
-│   ├── markBuk.js             # Lógica de Puppeteer para marcar en Buk
-│   ├── notifyTelegram.js      # Envío de mensajes por Telegram
-│   ├── testTelegram.js        # Función para probar Telegram
-│   ├── user-config.js         # Configuración de usuarios
-│   └── package.json           # Dependencias
-├── firebase.json              # Configuración del proyecto Firebase
-└── .firebaserc                # Alias del proyecto
-```
+- `runWith({ memory: "1GB", timeoutSeconds: 60 })` para Puppeteer
+- Plan **Blaze** habilitado en Firebase (necesario para programar funciones)
+- `chrome-aws-lambda` y `puppeteer-core@10.4.0` para ejecución en GCP
 
 ---
 
-## 📩 ¿Problemas o preguntas?
+## 🛑 Advertencias
 
-Contactá a quien te compartió este proyecto o revisá los logs desde:
+- Google Cloud puede cobrar si se exceden los límites gratuitos
+- Usar `firebase billing budgets` para configurar alertas de gasto
 
-- [Firebase Console > Functions](https://console.firebase.google.com/functions/)
-- O usando este comando:
-  ```bash
-  firebase functions:log
-  ```
+---
+
+## 📬 Créditos
+
+Desarrollado por un usuario automatizador de procesos 😎  
+Telegram + Puppeteer + Firebase = 💥
+
+---
