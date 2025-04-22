@@ -1,4 +1,5 @@
 const functions = require("firebase-functions");
+const { esFeriadoHoy } = require("./getFeriado");
 const { marcarEnBuk } = require("./markBuk");
 const { notifyTelegram } = require("./notifyTelegram");
 const users = require("./user-config");
@@ -10,6 +11,17 @@ function programarMarcaje(hora, sentido) {
         .timeZone("America/Santiago")
         .onRun(async () => {
             console.log(`🕒 Ejecutando marcaje programado para sentido: ${sentido} a las ${hora}`);
+
+            const feriado = await esFeriadoHoy();
+            if (feriado) {
+                console.log(`🚫 Hoy es feriado: ${feriado}. No se ejecutará el marcaje.`);
+
+                for (const user of users) {
+                    const mensaje = `🚫 Hoy es feriado en Chile: *${feriado}* – no se ejecutó el marcaje de ${sentido}`;
+                    await notifyTelegram(user, mensaje);
+                }
+                return;
+            }
 
             for (const user of users) {
                 try {

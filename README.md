@@ -6,11 +6,12 @@ Este proyecto automatiza el proceso de marcaje de **entrada** y **salida** en el
 
 ## 🚀 Funcionalidades
 
-- ✅ Marca automática de entrada y salida programada (cron)
-- ✅ Funciones manuales HTTP (`/marcarEntradaManual`, `/marcarSalidaManual`)
-- ✅ Login simulado (formulario con email, Next, contraseña, Sign In)
-- ✅ Click automatizado en botones `Entrada` / `Salida`
-- ✅ Inserción de latitud y longitud en los botones si no existen
+- ✅ Marca automática programada de lunes a viernes
+- ✅ Funciones HTTP manuales (`/marcarEntradaManual`, `/marcarSalidaManual`)
+- ✅ Detección y cancelación de marcaje en feriados chilenos (via API)
+- ✅ Simulación de login paso a paso (email → Next → password → Sign In)
+- ✅ Click automatizado en los botones `Entrada` o `Salida`
+- ✅ Inyección de latitud/longitud en los botones si no están presentes
 - ✅ Notificación por Telegram ante éxito o fallo
 
 ---
@@ -21,11 +22,12 @@ Este proyecto automatiza el proceso de marcaje de **entrada** y **salida** en el
 functions/
 │
 ├── index.js                 // Entrypoint con funciones programadas
-├── markBuk.js               // Lógica de navegación y marcaje
-├── notifyTelegram.js        // Notificación vía bot Telegram
-├── manualCheckin.js         // Funciones HTTP manuales
-├── testTelegram.js          // Función para probar Telegram
-├── user-config.js           // Configuración de usuario y empresa
+├── getFeriado.js            // Lógica para detectar feriados desde API
+├── markBuk.js               // Lógica de navegación y marcaje en Buk
+├── manualCheckin.js         // Funciones HTTP por demanda
+├── notifyTelegram.js        // Notificador por Telegram
+├── testTelegram.js          // Función de prueba de conexión Telegram
+├── user-config.js           // Config de usuarios, URLs y geolocalización
 └── package.json             // Dependencias y entorno
 ```
 
@@ -33,14 +35,14 @@ functions/
 
 ## 🛠️ Instalación
 
-1. Clonar el proyecto y entrar a la carpeta `functions`:
+1. Instalar dependencias:
 
 ```bash
 cd functions
 npm install --legacy-peer-deps
 ```
 
-2. Configurar las variables de entorno de Firebase:
+2. Configurar variables de entorno:
 
 ```bash
 firebase functions:config:set \
@@ -60,7 +62,7 @@ firebase deploy --only functions
 
 ## 👤 `user-config.js`
 
-Ejemplo de usuario:
+Ejemplo:
 
 ```js
 module.exports = [
@@ -78,13 +80,21 @@ module.exports = [
 ];
 ```
 
-> 📌 Soporta múltiples usuarios en el array.
+> ✅ Permite múltiples usuarios por empresa
+
+---
+
+## 📆 Evitar marcaje en feriados
+
+- Se consulta la API: `https://api.boostr.cl/holidays.json`
+- Si hoy es feriado en Chile, **se cancela el marcaje automáticamente**
+- Se notifica por Telegram con el nombre del feriado
 
 ---
 
 ## 🧪 Funciones manuales
 
-Una vez desplegadas, podés probar desde navegador o Postman:
+Podés llamarlas desde navegador, Postman o botón:
 
 ```
 https://us-central1-TU_PROYECTO.cloudfunctions.net/marcarEntradaManual
@@ -95,22 +105,12 @@ https://us-central1-TU_PROYECTO.cloudfunctions.net/marcarSalidaManual
 
 ## 🧠 Requisitos especiales
 
-- `runWith({ memory: "1GB", timeoutSeconds: 60 })` para Puppeteer
-- Plan **Blaze** habilitado en Firebase (necesario para programar funciones)
-- `chrome-aws-lambda` y `puppeteer-core@10.4.0` para ejecución en GCP
-
----
-
-## 🛑 Advertencias
-
-- Google Cloud puede cobrar si se exceden los límites gratuitos
-- Usar `firebase billing budgets` para configurar alertas de gasto
+- Plan Firebase Blaze (necesario para cron)
+- `runWith({ memory: "1GB", timeoutSeconds: 60 })`
+- `puppeteer-core@10.4.0` + `chrome-aws-lambda@10.1.0`
 
 ---
 
 ## 📬 Créditos
 
-Desarrollado por un usuario automatizador de procesos 😎  
-Telegram + Puppeteer + Firebase = 💥
-
----
+Automatizador serial + Telegram + Puppeteer + Firebase = ❤️
