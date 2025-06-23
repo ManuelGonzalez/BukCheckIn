@@ -6,7 +6,7 @@ const users = require("./user-config");
 
 function programarMarcaje(hora, sentido) {
     return functions
-        .runWith({ memory: "1GB", timeoutSeconds: 60 })
+        .runWith({ memory: "1GB", timeoutSeconds: 540 })
         .pubsub.schedule(hora)
         .timeZone("America/Santiago")
         .onRun(async () => {
@@ -41,7 +41,7 @@ function programarMarcaje(hora, sentido) {
         });
 }
 
-exports.marcarEntrada = programarMarcaje("30 8 * * 1-5", "ENTRADA");
+exports.marcarEntrada = programarMarcaje("30 08 * * 1-5", "ENTRADA");
 exports.marcarSalida = programarMarcaje("30 18 * * 1-5", "SALIDA");
 exports.testTelegramNotification = require("./testTelegram").testTelegramNotification;
 exports.marcarEntradaManual = require("./manualCheckin").marcarEntradaManual;
